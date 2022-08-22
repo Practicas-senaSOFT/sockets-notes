@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHATS</title>
+    <title>NOTES</title>
     <style>
         ul {list-style-type: node;margin: 0;padding: 0;}
         ul > li {padding: 0.5rem 1rem;}
@@ -17,77 +17,87 @@
     </style>
 </head>
 <body>
-    <h1>APP - CHATS</h1>
-    <ul></ul>
-    <form action="" style="background-color: rgb(187, 187, 187);text-align: center;">
-        <input type="text" placeholder="Mensaje">
-        <button type="submit">Enviar</button>
+    <h1>APP - NOTES</h1>
+    <ul id="notes"></ul>
+    <form id="noteForm" action="" style="background-color: rgb(143, 187, 228);text-align: center;">
+      <input id="title" type="text" placeholder="Title">
+      <textarea id="description" rows="3" placeholder="Description"></textarea>
+      <button type="submit">Send</button>
     </form>
-    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- <script src="./main.js" type="module"></script> -->
+    
+
     <script>
+
       let socket = io('http://localhost:3000/chat');
       // let socket2 = io('http://localhost:3000/home');
-      let currentsid;
+      // let currentsid;
       socket.on('connect', () => {
         console.log('ID:: ',socket.id);
         currentsid = socket.id;
       });
-      //Referenciamos los elementos del DOM
-      const form = document.querySelector('form');
-      const input = document.querySelector('input');
 
-      let menssages = document.querySelector('ul');
-      
-      form.addEventListener('submit', (e)=>{
-        console.warn(socket.connected);
-        e.preventDefault();
-        //VAlidamos que si on¿btene algun valor
-        if(input.value){
-          //emitimos al server y enviamos los datos
-          socket.emit('chat:send_menssage', {msg:input.value})
-          // Vaciamos el input
-          input.value=''
-        }
-        // alert('Ingrese un mensaje')
-      })
-      // Obtenemos lo que nos devuelte le Backend
-      socket.on('chat:on_menssage', (data) => {
-        console.warn('DATAAA:. ',data);
-        let newItem = document.createElement('li');
-        if(data.id == currentsid){
-          newItem.classList.add('host')
-        }
-        newItem.textContent = data.msg;
-        menssages.appendChild(newItem);
-        window.scrollto(0, document.body.scrollHeight);
+      const notesList = document.querySelector('#notes');
+      let notes;
+      //!Obtenemos las notas
+      socket.on('server:note:load', async (data)=>{
+        // notes.push(data);
+        notes = data
+        console.table(notes);
+        renderNotes(notes);
+      });
+      //Obtenemos la nota recien creada
+      socket.on('server:note:new', (note)=>{
+        appendNote(note);
+      });
+      //Rederisamos las notas obtenidas
+      const renderNotes = (notes) =>{
+        notes.forEach(note => notesList.append(noteUi(note)));
+      };
+      //Agregar todas las notas
+      const noteUi = (note) =>{
+        const div = document.createElement('dev')
+        div.innerHTML = `
+          <div>
+            <h1>${note.title}</h1>
+            <p>${note.description}</p>
+            <button>Update</button>
+            <button>Delete</button>
+          </div>`
+        return div;
+      };
+      //Agregar solo una nota, la que se crea
+      const appendNote = (note) => {
+        notesList.append(noteUi(note));
+      };
+
+      const noteForm = document.querySelector('#noteForm')
+      noteForm.addEventListener('submit', (event)=>{
+        event.preventDefault();
+        console.log('SUBMIT');
+
+        const title = noteForm['title'].value;
+        const description = noteForm['description'].value;
+        //Enviamos los datos
+        socket.emit('client:note:create',{title,description})
       });
 
+      //Gestor de envio - enviar datos
+      // const onHandlerSubmit = (event)=>{
+      //   event.preventDefault();
+      //   console.log('SUBMIT');
+
+      //   const title = noteForm['title'].value;
+      //   const description = noteForm['description'].value;
+      //   //Enviamos los datos
+      //   socket.emit('note:create',{title,description})
+      //   console.log(
+      //     `Title: ${title}\nDescription: ${description}`
+      //   );
+      // }
+
     </script>
+
 </body>
 </html>
-
-<!-- 
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Socket.IO chat</title>
-    <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-      #input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
-
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
-    </style>
-  </head>
-  <body>
-    <ul id="messages"></ul>
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-  </body>
-</html> -->
