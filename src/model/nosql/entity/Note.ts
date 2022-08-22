@@ -7,6 +7,10 @@ export {prop} from '@typegoose/typegoose'
 export class Note implements DataNote {
     
     //ID
+    @prop({
+        type:String
+    })
+    public id:string;
 
     @prop({
         type:String,
@@ -26,5 +30,5 @@ export class Note implements DataNote {
 };
 
 //Creamos el Modelo
-const nodeModel = getModelForClass(Note);
-export default nodeModel
+const noteModel = getModelForClass(Note);
+export default noteModel
