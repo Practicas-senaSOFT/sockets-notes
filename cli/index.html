@@ -42,9 +42,13 @@
         console.log('ID:: ',socket.id);
         currentsid = socket.id;
       });
-
+      //----> GLOBAL
       const notesList = document.querySelector('#notes');
       let notes;
+      let saveId = '';
+      const _title = document.querySelector('#title');
+      const _description = document.querySelector('#description');
+
       //!Obtenemos las notas
       socket.on('server:notes:load', async (data)=>{
         notes = data
@@ -54,6 +58,15 @@
       socket.on('server:notes:new', (note)=>{
         appendNote(note);
       });
+      //Nota obtenida por id
+      socket.on('server:note:selected', async (data)=>{
+        console.log('Nota:: ',data);
+        //Asiganmos los datos al form
+        _title.value = data.title;
+        _description.value = data.description;
+        saveId = data.id;
+      });
+
       //Rederisamos las notas obtenidas
       const renderNotes = (notes) =>{
         //Vaciamos la lista
@@ -86,6 +99,7 @@
           const idBtnUp = btnUpdate.dataset.id;
           //Escuchamos el evento
           btnUpdate.addEventListener('click',(e)=>{
+            getNoteById(idBtnUp)
             console.log('ID actualizado: ',idBtnUp);
           });
         return div;
@@ -99,11 +113,22 @@
       noteForm.addEventListener('submit', (event)=>{
         event.preventDefault();
         console.log('SUBMIT');
-
-        const title = noteForm['title'].value;
-        const description = noteForm['description'].value;
-        //Enviamos los datos
-        socket.emit('client:note:create',{title,description})
+        //Validamos si es para Update - Deleted
+        if(saveId){
+          //Update
+          updateNote(saveId,_title.value,_description.value);
+          console.log('ACTUALIZANDO');
+        }else{
+          //Create
+          const title = _title.value;
+          const description = _description.value;
+          //Enviamos los datos
+          socket.emit('client:note:create',{title,description})
+        }
+        //Vaciamos los campos
+        saveId = '';
+        _title.value = '';
+        _description.value = '';
       });
 
       //Eliminar nota
@@ -111,12 +136,12 @@
         await socket.emit('client:note:delete', id);
       };
       //Obtenemos nota por id
-      const hetNoteById = async (id) => {
+      const getNoteById = async (id) => {
         await socket.emit('client:note:getId', id);
       };
       //Update note
-      const updateNote = async (id) => {
-
+      const updateNote = async (id,title,description) => {
+        await socket.emit('client:note:update', {id,title,description})
       };
       //Gestor de envio - enviar datos
       // const onHandlerSubmit = (event)=>{
