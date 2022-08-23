@@ -5,31 +5,36 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOTES</title>
+    <!-- <link rel="stylesheet" href="style.scss"> -->
     <style>
-        ul {list-style-type: node;margin: 0;padding: 0;}
-        ul > li {padding: 0.5rem 1rem;}
-        ul > li.host{
-            background-color: rgb(187, 214, 250);
-            text-align: right;
-            font-style: italic;
-            font-weight: 600;
-        }
+      ul {
+        list-style-type: node;margin: 0;padding: 0;
+      }
+      ul > li {padding: 0.5rem 1rem;}
+      ul > li.host{
+          background-color: rgb(133, 111, 179);
+          text-align: right;
+          font-style: italic;
+          font-weight: 600;
+      }
+      form {
+          background-color: rgb(42, 57, 99);
+          text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>APP - NOTES</h1>
-    <ul id="notes"></ul>
-    <form id="noteForm" action="" style="background-color: rgb(143, 187, 228);text-align: center;">
+    <form id="noteForm" action="">
       <input id="title" type="text" placeholder="Title">
       <textarea id="description" rows="3" placeholder="Description"></textarea>
       <button type="submit">Send</button>
     </form>
+    <ul id="notes"></ul>
     <script src="/socket.io/socket.io.js"></script>
     <!-- <script src="./main.js" type="module"></script> -->
     
-
     <script>
-
       let socket = io('http://localhost:3000/chat');
       // let socket2 = io('http://localhost:3000/home');
       // let currentsid;
@@ -41,18 +46,19 @@
       const notesList = document.querySelector('#notes');
       let notes;
       //!Obtenemos las notas
-      socket.on('server:note:load', async (data)=>{
-        // notes.push(data);
+      socket.on('server:notes:load', async (data)=>{
         notes = data
-        console.table(notes);
         renderNotes(notes);
       });
       //Obtenemos la nota recien creada
-      socket.on('server:note:new', (note)=>{
+      socket.on('server:notes:new', (note)=>{
         appendNote(note);
       });
       //Rederisamos las notas obtenidas
       const renderNotes = (notes) =>{
+        //Vaciamos la lista
+        notesList.innerHTML = '';
+        //MOstramos la lista
         notes.forEach(note => notesList.append(noteUi(note)));
       };
       //Agregar todas las notas
@@ -60,11 +66,28 @@
         const div = document.createElement('dev')
         div.innerHTML = `
           <div>
+            <p>Id: ${note.id}</p>
             <h1>${note.title}</h1>
             <p>${note.description}</p>
-            <button>Update</button>
-            <button>Delete</button>
+            <button class="update" data-id="${note.id}">Update</button>
+            <button class="delete" data-id="${note.id}">Delete</button>
           </div>`
+
+          //Delete
+          const btnDelete = div.querySelector('.delete');
+          let idBtnDe = btnDelete.dataset.id;
+          //Escuchamos el evento
+          btnDelete.addEventListener('click',(e)=>{
+            deleteNote(idBtnDe);
+            console.log('ID eliminado-> ',idBtnDe);
+          });
+          //Update
+          const btnUpdate = div.querySelector('.update');
+          const idBtnUp = btnUpdate.dataset.id;
+          //Escuchamos el evento
+          btnUpdate.addEventListener('click',(e)=>{
+            console.log('ID actualizado: ',idBtnUp);
+          });
         return div;
       };
       //Agregar solo una nota, la que se crea
@@ -83,6 +106,18 @@
         socket.emit('client:note:create',{title,description})
       });
 
+      //Eliminar nota
+      const deleteNote = async (id) => {
+        await socket.emit('client:note:delete', id);
+      };
+      //Obtenemos nota por id
+      const hetNoteById = async (id) => {
+        await socket.emit('client:note:getId', id);
+      };
+      //Update note
+      const updateNote = async (id) => {
+
+      };
       //Gestor de envio - enviar datos
       // const onHandlerSubmit = (event)=>{
       //   event.preventDefault();
@@ -91,7 +126,7 @@
       //   const title = noteForm['title'].value;
       //   const description = noteForm['description'].value;
       //   //Enviamos los datos
-      //   socket.emit('note:create',{title,description})
+      //   socket.emit('client:note:create',{title,description})
       //   console.log(
       //     `Title: ${title}\nDescription: ${description}`
       //   );
