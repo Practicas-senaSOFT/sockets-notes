@@ -3,6 +3,7 @@ import { DataNote } from '../interface/sockets';
 //MODEL CRUD
 import { createNote } from '../model/nosql/Note/create';
 import { deleteNote as delNote } from '../model/nosql/Note/delete';
+import { update } from '../model/nosql/Note/update';
 
 export const saveDataNote = async (values:DataNote) => {
     //Obtenemos los datos
@@ -21,4 +22,11 @@ export const deleteNote = async (id:string):Promise<boolean> => {
     //validacion
     //Eliminacion
     return await delNote(id);
+};
+
+export const updateNote = async (data:DataNote) => {
+    //Validamos datos
+    //Actualizamos
+    const result:boolean = await update(data);
+    
 };

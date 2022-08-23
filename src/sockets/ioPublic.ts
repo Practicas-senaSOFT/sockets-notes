@@ -1,10 +1,11 @@
+import { NotStringTypeError } from '@typegoose/typegoose/lib/internal/errors';
 import colors from 'colors';
 //Import Sockets
 import { Namespace,Server,Socket } from 'socket.io';
 ////
 import { DataNote } from '../interface/sockets';
-import { getFindAll } from '../model/nosql/Note/read';
-import { deleteNote, saveDataNote } from '../services/noteData.service';
+import { getNoteId, getNotesAll } from '../model/nosql/Note/read';
+import { deleteNote, saveDataNote, updateNote } from '../services/noteData.service';
 
 export const chatPublicFuction = (sio:Server) => {
     const notePublic:Namespace = sio.of('/chat')
@@ -19,7 +20,7 @@ export const chatPublicFuction = (sio:Server) => {
 
         //obtenemos todas las notas
         const emitNote = async () => {
-            const notes = await getFindAll();
+            const notes = await getNotesAll();
             console.log(`Length Notes: ${notes.length}`);
             // notes.forEach(note => console.log(note.id));
             //Pasamos las notas encotradas
@@ -40,7 +41,22 @@ export const chatPublicFuction = (sio:Server) => {
             //Emitimos al Cli la nota creada
             notePublic.emit('server:notes:new', result)
         });
-
+        //get note by id
+        socket.on('client:note:getId', async (id:string) => {
+            const note = await getNoteId(id);
+            console.log(note);
+            //Emitimos respuesta
+            notePublic.emit('server:note:selected', note)
+        });
+        //Update note
+        socket.on('client:note:update', async (data:DataNote) => {
+            console.log('DATA Updating...',data);
+            //actualizamos
+            await updateNote(data);
+            console.log(colors.yellow('Data Updated'));
+            //Emitimos las notas actualizadas
+            await emitNote();
+        });
         //Delete Note
         socket.on('client:note:delete', async (data:string)=>{
             console.log(colors.blue(`ELIMINADO: ${data}`));
