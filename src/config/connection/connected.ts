@@ -1,9 +1,9 @@
 //CONEXION A MONGODB
 import mongoose, {connect} from 'mongoose';
 //Document connect -> DB
-const DC = 'demoSocketNote';
-const HOST = 'localhost';
-const PORT = '27017';
+const DC = process.env.MONGO_DB;
+const HOST = process.env.MONGO_HOST;
+const PORT = process.env.MONGO_PORT;
 
 //Conexion
 export const connectDB = async () => {
