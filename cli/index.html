@@ -12,28 +12,111 @@
       }
       ul > li {padding: 0.5rem 1rem;}
       ul > li.host{
-          background-color: rgb(133, 111, 179);
+          background-color: rgb(211, 202, 231);
           text-align: right;
           font-style: italic;
           font-weight: 600;
       }
-      form {
-          background-color: rgb(42, 57, 99);
-          text-align: center;
+      ul, div{
+        display: flex;
+        flex-direction: row;
       }
+      #id{
+        color: grey;
+        font-size: smaller;
+      }
+      .div-ul{
+        box-shadow: 2px 2px 8px 1px;
+        width: 100%;
+        display: flex;
+        gap: 1rem;
+        /* flex-direction: column; */
+        justify-content: space-evenly;
+        align-items: center;
+      }
+      .ul-btn{
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: flex-end;
+        width: fit-content;
+        gap: 1rem;
+      }
+      p{
+        flex-wrap: wrap;
+        font-size: small;
+      }
+      h1{
+        flex-wrap: wrap;
+        font-family: wr;
+      }
+      .resultNote{
+        display: flex;
+        flex-direction: column;
+      }
+      /* NOTES */
+      #notes{
+        display: grid;
+        flex-wrap: wrap;
+        width: 100%;
+        height: 100%;
+        gap: 0.8rem;
+      }
+      .sec-form{
+          display: flex;
+          /* justify-content: center; */
+          flex-direction: column;
+          justify-content: center;
+          /* background-color: rgb(42, 57, 99); */
+          width: 100%;
+          height: fit-content;
+          text-align: center;
+          padding: 2rem 0rem;
+      }
+      input, textarea{
+        color: black;
+        width: 40%;
+        border-radius: 0.1rem;
+        background-color: rgb(219, 219, 219);
+      }
+      button{
+        min-width: 4rem;
+        height: 2rem;
+        /* background-color: rgb(242, 140, 140); */
+        border-radius: 0.4rem;
+      }
+      form{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .contend{
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+      }
+
     </style>
   </head>
   <body>
     <h1>APP - NOTES</h1>
-    <form id="noteForm" action="">
-      <input id="title" type="text" placeholder="Title">
-      <textarea id="description" rows="3" placeholder="Description"></textarea>
-      <button type="submit">Send</button>
-    </form>
-    <ul id="notes"></ul>
+    <div class="contend">
+      <section class="sec-form">
+        <form id="noteForm" action="">
+          <input id="title" type="text" placeholder="Title">
+          <textarea id="description" rows="3" placeholder="Description"></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </section id="notes">
+      <section class="ul-notes">
+        <ul id="notes"></ul>
+      </section>
+    </div>
+
+
     <script src="/socket.io/socket.io.js"></script>
     <!-- <script src="./main.js" type="module"></script> -->
-    
     <script>
       let socket = io('http://localhost:3000/chat');
       // let socket2 = io('http://localhost:3000/home');
@@ -78,12 +161,16 @@
       const noteUi = (note) =>{
         const div = document.createElement('dev')
         div.innerHTML = `
-          <div>
-            <p>Id: ${note.id}</p>
-            <h1>${note.title}</h1>
-            <p>${note.description}</p>
-            <button class="update" data-id="${note.id}">Update</button>
-            <button class="delete" data-id="${note.id}">Delete</button>
+          <div class="div-ul">
+            <p id="id">Id: ${note.id}</p>
+            <div class="resultNote">
+              <h1>${note.title}</h1>
+              <p>${note.description}</p>
+            </div>
+            <div class="ul-btn">
+              <button class="update" data-id="${note.id}">Update</button>
+              <button class="delete" data-id="${note.id}">Delete</button>
+            </di>
           </div>`
 
           //Delete
